@@ -1,5 +1,5 @@
 interface:
-  display_name: "设计对话"
+  display_name: "design-dialogue"
   short_description: "在协作式系统设计中控制讨论阶段、当前焦点和抽象层级"
   default_prompt: "使用 $design-dialogue 与我共同推进系统设计，保持当前焦点并控制讨论深度和阶段切换。"
 
