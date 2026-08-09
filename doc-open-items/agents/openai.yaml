@@ -1,0 +1,4 @@
+interface:
+  display_name: "doc-open-items"
+  short_description: "统一标记、分类并规范化各类文档中的待处理事项、风险与想法"
+  default_prompt: "使用 $doc-open-items 为这份文档标记并分类待处理事项。"
