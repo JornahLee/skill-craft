@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implementation Governance"
+  short_description: "按风险建议治理级别，并在用户确认后控制分阶段实施与验收"
+  default_prompt: "使用 $implementation-governance 评估改动所需的治理粒度，并按确认后的方式推进。"
