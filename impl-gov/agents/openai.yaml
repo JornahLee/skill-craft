@@ -1,4 +1,4 @@
 interface:
-  display_name: "Impl Gov"
+  display_name: "impl-gov"
   short_description: "按风险评估治理粒度，控制实施、阶段验收、过程记录与最终归档"
   default_prompt: "使用 $impl-gov 评估治理粒度，记录实施过程，并按确认后的方式推进和归档。"
