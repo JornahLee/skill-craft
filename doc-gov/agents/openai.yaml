@@ -1,4 +1,4 @@
 interface:
   display_name: "doc-gov"
-  short_description: "治理业务、技术、代码与实施文档的权威来源、关系和局部影响"
-  default_prompt: "使用 $doc-gov 组织并维护本项目的业务、技术、代码映射和实施文档。"
+  short_description: "按导航型或设计型治理项目文档、权威来源与局部影响"
+  default_prompt: "使用 $doc-gov 选择并维护适合本项目的导航型或设计型文档治理。"
