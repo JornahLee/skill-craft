@@ -1,4 +1,6 @@
 interface:
   display_name: "impl-gov"
-  short_description: "按风险评估治理粒度，控制实施、阶段验收、过程记录与最终归档"
-  default_prompt: "使用 $impl-gov 评估治理粒度，记录实施过程，并按确认后的方式推进和归档。"
+  short_description: "低成本恢复治理状态，按需控制实施、验收与归档"
+  default_prompt: "使用 $impl-gov 恢复或评估当前实施项，并按当前动作最小化加载治理规范。"
+policy:
+  allow_implicit_invocation: true
