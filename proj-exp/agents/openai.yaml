@@ -1,0 +1,4 @@
+interface:
+  display_name: "proj-exp"
+  short_description: "渐进回忆、沉淀、合并并强化跨会话复用的高价值项目经验"
+  default_prompt: "使用 $proj-exp 检索当前任务相关经验，并沉淀或强化高成本项目认知。"
