@@ -9,8 +9,8 @@ description: 治理软件项目的文档导航、业务设计、技术设计、�
 
 ## 开始任务
 
-1. 读取用户请求和当前范围适用的 `AGENTS.md`。
-2. 若其中已经声明治理类型和实际入口，直接采用，不重新推断。
+1. 回忆上下文是否明确治理类型,如果未提及再尝试读取 `AGENTS.md`。
+2. 如果已经声明治理类型，直接采用，不重新推断。
 3. 若治理类型未知且本次确实需要确定类型，只读取 [governance-selection.md](references/governance-selection.md)。
 4. 从下表选择本次任务需要的最少 reference。不要预读其他文件；复合任务只叠加直接涉及的任务包。
 5. 从声明的地图或导航入口渐进定位项目文档。只沿明确关系或代码证据扩大范围。
@@ -27,8 +27,6 @@ description: 治理软件项目的文档导航、业务设计、技术设计、�
 | 创建、更新或取代 ADR | [adr.md](references/adr.md) |
 | 启用治理、切换治理类型或更新常驻 `AGENTS.md` 声明 | [resident-config.md](references/resident-config.md) |
 | 检查全局文档结构或语义漂移 | [audit.md](references/audit.md) |
-
-仅实施契约的计划、阶段、进度、验收和偏差处理使用 `$impl-gov`。只有任务同时涉及当前设计、文档影响或设计收敛时，才叠加读取上表对应规则。
 
 ## 全局约束
 
