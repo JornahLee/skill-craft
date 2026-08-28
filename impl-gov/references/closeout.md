@@ -2,10 +2,10 @@
 
 仅在实施完成、明确终止或需要检查归档时读取。
 
-统一使用：
+使用已确定的实际实施根，不为归档重读目录规范；首次建立或调整入口时才读取 [文档组织与常驻入口](documents.md)：
 
 ```text
-docs/implementation/
+<实施根>/
 ├─ active/
 │  └─ index.md
 └─ archive/

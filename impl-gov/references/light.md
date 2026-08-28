@@ -4,10 +4,10 @@
 
 ## 文档
 
-使用：
+使用已确定的实际实施根；首次落位或调整入口时才读取 [文档组织与常驻入口](documents.md)：
 
 ```text
-docs/implementation/active/YYYY-MM-DD-简短主题.md
+<实施根>/active/YYYY-MM-DD-简短主题.md
 ```
 
 文档保持精简，记录：
