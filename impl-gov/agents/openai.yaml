@@ -3,4 +3,4 @@ interface:
   short_description: "低成本恢复治理状态，按需控制实施、验收与归档"
   default_prompt: "使用 $impl-gov 恢复或评估当前实施项，并按当前动作最小化加载治理规范。"
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
