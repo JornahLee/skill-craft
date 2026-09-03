@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""交互式安装当前仓库中的 Codex skills。"""
+"""交互式安装当前仓库中的 Codex 或 DSH skills。"""
 
 from __future__ import annotations
 
@@ -27,7 +27,10 @@ def discover_skills(repo_root: Path) -> list[Path]:
     )
 
 
-def codex_skills_dir() -> Path:
+def user_skills_dir(platform: str) -> Path:
+    if platform == "dsh":
+        return Path.home() / ".dsh" / "skills"
+
     codex_home = os.environ.get("CODEX_HOME")
     base = Path(codex_home).expanduser() if codex_home else Path.home() / ".codex"
     return base / "skills"
@@ -46,7 +49,25 @@ def project_skills_dir() -> Path:
     return project_root(Path.cwd()) / ".agents" / "skills"
 
 
-def choose_destination() -> Path:
+def choose_platform() -> str | None:
+    print("请选择目标平台：")
+    print("  1. Codex")
+    print("  2. DSH")
+    while True:
+        try:
+            answer = input("平台 [1]：").strip().lower()
+        except EOFError:
+            print("\n未读取到平台选择，已取消。")
+            return None
+
+        if answer in {"", "1", "codex"}:
+            return "codex"
+        if answer in {"2", "dsh"}:
+            return "dsh"
+        print("选择无效，请输入 1 或 2。")
+
+
+def choose_destination(platform: str) -> Path:
     project_destination = project_skills_dir()
     print(f"当前项目安装目录：{project_destination}")
     try:
@@ -55,7 +76,7 @@ def choose_destination() -> Path:
         answer = ""
     if answer in {"y", "yes"}:
         return project_destination
-    return codex_skills_dir()
+    return user_skills_dir(platform)
 
 
 def print_skills(skills: list[Path], destination_root: Path) -> None:
@@ -141,7 +162,7 @@ def install_skill(source: Path, destination_root: Path) -> Path:
     """先暂存完整副本，再替换目标目录。"""
     destination = destination_root / source.name
     if source.resolve() == destination.resolve():
-        raise ValueError("源目录已经位于 Codex skills 安装目录中")
+        raise ValueError("源目录已经位于 skills 安装目录中")
 
     destination_root.mkdir(parents=True, exist_ok=True)
     temporary_root = Path(
@@ -173,18 +194,23 @@ def install_skill(source: Path, destination_root: Path) -> Path:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="安装当前仓库中的 Codex skills；不指定 skill 时进入交互式多选。"
+        description="安装当前仓库中的 Codex 或 DSH skills；不指定 skill 时进入交互式多选。"
     )
     parser.add_argument("skills", nargs="*", help="要安装的 skill 名称")
     parser.add_argument("--all", action="store_true", help="选择仓库中的全部 skills")
     parser.add_argument("--list", action="store_true", help="仅列出可安装的 skills")
     parser.add_argument("--force", action="store_true", help="覆盖已安装项，不再询问")
+    parser.add_argument(
+        "--platform",
+        choices=("codex", "dsh"),
+        help="目标平台；带参数调用时默认为 codex",
+    )
     destination = parser.add_mutually_exclusive_group()
     destination.add_argument(
         "--project", action="store_true", help="安装到当前项目的 .agents/skills"
     )
     destination.add_argument(
-        "--user", action="store_true", help="安装到用户级 Codex skills 目录"
+        "--user", action="store_true", help="安装到所选平台的用户级 skills 目录"
     )
     return parser
 
@@ -194,12 +220,19 @@ def main() -> int:
     skills = discover_skills(REPO_ROOT)
     interactive = not args.all and not args.skills and not args.list
 
+    if interactive and args.platform is None:
+        platform = choose_platform()
+        if platform is None:
+            return 0
+    else:
+        platform = args.platform or "codex"
+
     if args.project:
         destination_root = project_skills_dir()
     elif args.user or not interactive:
-        destination_root = codex_skills_dir()
+        destination_root = user_skills_dir(platform)
     else:
-        destination_root = choose_destination()
+        destination_root = choose_destination(platform)
 
     if not skills:
         print("当前仓库未发现包含 SKILL.md 的一级目录。", file=sys.stderr)
@@ -246,7 +279,7 @@ def main() -> int:
 
     print(f"\n完成：安装 {installed} 个，跳过 {len(skipped)} 个，失败 {failures} 个。")
     if installed:
-        print("新安装的 skills 将在 Codex 的下一轮对话中可用。")
+        print(f"新安装的 skills 将在 {platform.upper()} 的下一轮对话中可用。")
     return 1 if failures else 0
 
 

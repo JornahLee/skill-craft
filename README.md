@@ -1,11 +1,11 @@
 # Skill Craft
 
-本仓库包含一组 Codex skills。
+本仓库包含一组可供 Codex 和 DSH 使用的 skills。
 
 ## 安装
 
-运行安装脚本后，可先选择安装到当前项目或用户目录，再按序号、名称或区间选择
-一个或多个 skill：
+运行安装脚本后，可先选择 Codex 或 DSH，再选择安装到当前项目或用户目录，最后
+按序号、名称或区间选择一个或多个 skill：
 
 ```bash
 python3 install_skills.py
@@ -22,6 +22,9 @@ python3 install_skills.py --list
 # 安装全部 skills
 python3 install_skills.py --all --user
 
+# 将全部 skills 安装到 DSH 用户目录
+python3 install_skills.py --all --user --platform dsh
+
 # 将指定 skills 安装到当前项目的 .agents/skills
 python3 install_skills.py doc-gov proj-exp --project
 
@@ -29,7 +32,8 @@ python3 install_skills.py doc-gov proj-exp --project
 python3 install_skills.py --all --user --force
 ```
 
-脚本只依赖 Python 标准库。裸运行时会询问是否安装到当前 Git 仓库根目录的
-`.agents/skills`；选择否时安装到 `~/.codex/skills`，如果设置了 `CODEX_HOME`，
-则安装到 `$CODEX_HOME/skills`。带参数调用默认保持用户级安装，也可以用
-`--project` 或 `--user` 明确指定。已安装项默认会先询问是否覆盖。
+脚本只依赖 Python 标准库。直接运行时会先询问目标平台，再询问是否安装到当前 Git
+仓库根目录的 `.agents/skills`。选择用户级安装时，Codex 使用
+`~/.codex/skills`（如果设置了 `CODEX_HOME`，则使用 `$CODEX_HOME/skills`），
+DSH 使用 `~/.dsh/skills`。带参数调用默认选择 Codex 和用户级安装，也可以用
+`--platform`、`--project` 或 `--user` 明确指定。已安装项默认会先询问是否覆盖。
