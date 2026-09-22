@@ -4,14 +4,38 @@
 
 ## 安装
 
+无需克隆仓库，在终端中执行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/JornahLee/skill-craft/main/install.sh | bash
+```
+
+支持 macOS、Linux 和 WSL，需要 Bash、curl、tar 和 Python 3.9+。
+每次运行会下载 main 分支的最新快照，在临时目录中运行安装程序，结束后清理。
+更新 skills 也使用同一条命令，已有项会询问是否覆盖。
+
 运行安装脚本后，可先选择 Codex 或 DSH，再选择安装到当前项目或用户目录，最后
-按序号、名称或区间选择一个或多个 skill：
+按序号、名称或区间选择一个或多个 skill。项目目录以执行命令时所在的位置为准。
+示例选择：`1,3-5`、`doc-gov proj-exp` 或 `all`。
+
+远程入口也支持透传参数：
+
+```bash
+# 安装全部 skills 到用户目录，覆盖已有项
+curl -fsSL https://raw.githubusercontent.com/JornahLee/skill-craft/main/install.sh | bash -s -- --all --user --force
+
+# 安装指定 skills 到当前项目
+curl -fsSL https://raw.githubusercontent.com/JornahLee/skill-craft/main/install.sh | bash -s -- doc-gov proj-exp --project
+```
+
+无参数安装需要可交互的终端。自动化环境请明确指定 skills 或 `--all`、安装位置，
+并在需要覆盖时传入 `--force`。
+
+如果已经克隆仓库，也可以直接运行本地安装脚本：
 
 ```bash
 python3 install_skills.py
 ```
-
-示例选择：`1,3-5`、`doc-gov proj-exp` 或 `all`。
 
 也可以直接使用命令行选项：
 
