@@ -24,7 +24,7 @@ skill 触发、重复触发或阶段切换都不是重读理由。只有上下�
 | 局部创建、修改、拆分或审查业务设计和技术设计 | [design-change.md](references/design-change.md) |
 | 从文档定位代码，或判断代码变更的文档影响 | [impact-tracing.md](references/impact-tracing.md) |
 | 建立或重构完整设计文档体系、地图和基础文档 | [design-system.md](references/design-system.md) |
-| 表达已确认但尚未生效的目标设计，或在实施结束时收敛设计 | [design-state.md](references/design-state.md) |
+| 表达已确认但尚未生效的候选设计，或显式使候选设计生效、撤销候选 | [design-state.md](references/design-state.md) |
 | 创建、更新或取代 ADR | [adr.md](references/adr.md) |
 | 首次安置本 skill 的文档、切换治理类型或调整常驻入口 | [resident-config.md](references/resident-config.md) |
 | 检查全局文档结构或语义漂移 | [audit.md](references/audit.md) |
