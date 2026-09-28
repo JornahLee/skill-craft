@@ -62,12 +62,14 @@ python3 install_skills.py --all --user --force
 DSH 使用 `~/.dsh/skills`。带参数调用默认选择 Codex 和用户级安装，也可以用
 `--platform`、`--project` 或 `--user` 明确指定。已安装项默认会先询问是否覆盖。
 
-安装到项目且成功安装或更新 `design-dialogue` 时，脚本会将该 skill 的
-`assets/AGENTS.fragment.md` 中的协作规则同步到项目根目录的 `AGENTS.md`，
-文件不存在时创建。交互式选择项目安装与 `--project` 行为相同。
-用户级安装、仅列出 skills、跳过或安装失败时不写入规则。
+进入项目安装流程后，无论选择哪个 skill，脚本都会将独立模板
+`prompt/AGENTS.feedback.fragment.md` 中的协作规则同步到项目根目录的 `AGENTS.md`，
+文件不存在时创建。每次安装流程只同步一次，即使所有 skill 都被跳过或安装失败，
+仍会同步规则。交互式选择项目安装与 `--project` 行为相同。
+用户级安装、仅列出 skills、无效参数或取消选择时不写入规则。
 
 脚本通过固定标记和内容校验值维护规则段落：缺失时添加，相同时跳过，版本变化时
 只更新该段，保留其他内容。若该段被手动修改、标记损坏或重复，则保留原文件，
 提示检查差异并返回非零退出码；skill 安装结果仍保留。`--force` 只覆盖 skill，
 不会绕过规则段落的手动修改保护。同步只发生在安装时，日常使用 skill 不检查配置。
+旧版 `design-dialogue` 规则段落会在校验通过后迁移为独立标记，不重复追加。

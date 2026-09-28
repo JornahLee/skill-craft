@@ -193,18 +193,26 @@ def install_skill(source: Path, destination_root: Path) -> Path:
     return destination
 
 
-def sync_dialogue_rules(project: Path, installed_skill: Path) -> str:
+def sync_project_rules(project: Path) -> str:
     """只维护带校验值的规则段落；手动修改或标记损坏时保留原文。"""
     target = project / "AGENTS.md"
     if target.is_symlink():
         raise ValueError(f"{target} 是符号链接，未写入协作规则")
-    fragment = (installed_skill / "assets" / "AGENTS.fragment.md").read_bytes()
+    fragment = (REPO_ROOT / "prompt" / "AGENTS.feedback.fragment.md").read_bytes()
     body = fragment.replace(b"\r\n", b"\n").strip() + b"\n"
     digest = hashlib.sha256(body).hexdigest().encode("ascii")
-    prefix = b"<!-- skill-craft:design-dialogue:begin"
-    end = b"<!-- skill-craft:design-dialogue:end -->"
+    prefix = b"<!-- skill-craft:feedback:begin"
+    end = b"<!-- skill-craft:feedback:end -->"
     block = prefix + b" sha256=" + digest + b" -->\n" + body + end
     original = target.read_bytes() if target.exists() else b""
+
+    # 兼容旧版安装留下的标记，验证未被手动修改后迁移到独立标记。
+    legacy_prefix = b"<!-- skill-craft:design-dialogue:begin"
+    legacy_end = b"<!-- skill-craft:design-dialogue:end -->"
+    if legacy_prefix in original or legacy_end in original:
+        if prefix in original or end in original:
+            raise ValueError("新旧协作规则标记同时存在，已保留 AGENTS.md，请检查差异")
+        prefix, end = legacy_prefix, legacy_end
 
     if prefix in original or end in original:
         pattern = re.compile(
@@ -329,14 +337,15 @@ def main() -> int:
         else:
             installed += 1
             print(f"已安装：{skill.name} -> {destination}")
-            if project_install and skill.name == "design-dialogue":
-                project = destination_root.parent.parent
-                try:
-                    status = sync_dialogue_rules(project, destination)
-                    print(f"协作规则{status}：{project / 'AGENTS.md'}")
-                except (OSError, ValueError) as error:
-                    config_failures += 1
-                    print(f"协作规则未能写入：{error}（skill 已安装）", file=sys.stderr)
+
+    if project_install:
+        project = destination_root.parent.parent
+        try:
+            status = sync_project_rules(project)
+            print(f"协作规则{status}：{project / 'AGENTS.md'}")
+        except (OSError, ValueError) as error:
+            config_failures += 1
+            print(f"协作规则未能写入：{error}（skill 安装结果不受影响）", file=sys.stderr)
 
     print(f"\n完成：安装 {installed} 个，跳过 {len(skipped)} 个，失败 {failures} 个。")
     if config_failures:
