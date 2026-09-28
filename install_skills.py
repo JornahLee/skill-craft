@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import re
 import shutil
@@ -67,7 +68,7 @@ def choose_platform() -> str | None:
         print("选择无效，请输入 1 或 2。")
 
 
-def choose_destination(platform: str) -> Path:
+def choose_destination(platform: str) -> tuple[Path, bool]:
     project_destination = project_skills_dir()
     print(f"当前项目安装目录：{project_destination}")
     try:
@@ -75,8 +76,8 @@ def choose_destination(platform: str) -> Path:
     except EOFError:
         answer = ""
     if answer in {"y", "yes"}:
-        return project_destination
-    return user_skills_dir(platform)
+        return project_destination, True
+    return user_skills_dir(platform), False
 
 
 def print_skills(skills: list[Path], destination_root: Path) -> None:
@@ -192,6 +193,55 @@ def install_skill(source: Path, destination_root: Path) -> Path:
     return destination
 
 
+def sync_dialogue_rules(project: Path, installed_skill: Path) -> str:
+    """只维护带校验值的规则段落；手动修改或标记损坏时保留原文。"""
+    target = project / "AGENTS.md"
+    if target.is_symlink():
+        raise ValueError(f"{target} 是符号链接，未写入协作规则")
+    fragment = (installed_skill / "assets" / "AGENTS.fragment.md").read_bytes()
+    body = fragment.replace(b"\r\n", b"\n").strip() + b"\n"
+    digest = hashlib.sha256(body).hexdigest().encode("ascii")
+    prefix = b"<!-- skill-craft:design-dialogue:begin"
+    end = b"<!-- skill-craft:design-dialogue:end -->"
+    block = prefix + b" sha256=" + digest + b" -->\n" + body + end
+    original = target.read_bytes() if target.exists() else b""
+
+    if prefix in original or end in original:
+        pattern = re.compile(
+            re.escape(prefix) + rb" sha256=([0-9a-f]{64}) -->\n(.*?)" + re.escape(end),
+            re.DOTALL,
+        )
+        match = pattern.search(original)
+        if original.count(prefix) != 1 or original.count(end) != 1 or match is None:
+            raise ValueError("协作规则标记不完整或重复，已保留 AGENTS.md，请检查差异")
+        if hashlib.sha256(match.group(2)).hexdigest().encode("ascii") != match.group(1):
+            raise ValueError("协作规则已被手动修改，已保留 AGENTS.md，请检查差异")
+        if match.group(0) == block:
+            return "无需更新"
+        updated = original[:match.start()] + block + original[match.end():]
+        status = "已更新"
+    else:
+        separator = b"" if not original or original.endswith(b"\n\n") else (
+            b"\n" if original.endswith(b"\n") else b"\n\n"
+        )
+        updated = original + separator + block + b"\n"
+        status = "已添加"
+
+    # 同目录暂存后替换，避免写入中断留下不完整的指令文件。
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=project, prefix=".AGENTS-", delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(updated)
+        if target.exists():
+            shutil.copymode(target, temporary)
+        temporary.replace(target)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+    return status
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="安装当前仓库中的 Codex 或 DSH skills；不指定 skill 时进入交互式多选。"
@@ -229,10 +279,12 @@ def main() -> int:
 
     if args.project:
         destination_root = project_skills_dir()
+        project_install = True
     elif args.user or not interactive:
         destination_root = user_skills_dir(platform)
+        project_install = False
     else:
-        destination_root = choose_destination(platform)
+        destination_root, project_install = choose_destination(platform)
 
     if not skills:
         print("当前仓库未发现包含 SKILL.md 的一级目录。", file=sys.stderr)
@@ -264,6 +316,7 @@ def main() -> int:
     skipped = set() if args.force else confirm_overwrite(selected, destination_root)
     failures = 0
     installed = 0
+    config_failures = 0
     for skill in selected:
         if skill.name in skipped:
             print(f"跳过：{skill.name}")
@@ -276,11 +329,21 @@ def main() -> int:
         else:
             installed += 1
             print(f"已安装：{skill.name} -> {destination}")
+            if project_install and skill.name == "design-dialogue":
+                project = destination_root.parent.parent
+                try:
+                    status = sync_dialogue_rules(project, destination)
+                    print(f"协作规则{status}：{project / 'AGENTS.md'}")
+                except (OSError, ValueError) as error:
+                    config_failures += 1
+                    print(f"协作规则未能写入：{error}（skill 已安装）", file=sys.stderr)
 
     print(f"\n完成：安装 {installed} 个，跳过 {len(skipped)} 个，失败 {failures} 个。")
+    if config_failures:
+        print(f"另有 {config_failures} 项协作规则同步失败。", file=sys.stderr)
     if installed:
         print(f"新安装的 skills 将在 {platform.upper()} 的下一轮对话中可用。")
-    return 1 if failures else 0
+    return 1 if failures or config_failures else 0
 
 
 if __name__ == "__main__":
